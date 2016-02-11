@@ -5,6 +5,7 @@ import javax.swing.JOptionPane;
 
 import euchre.game.GameLog;
 import euchre.game.GameRunnerCallback;
+import euchre.gui.GameLobby;
 import euchre.player.*;
 
 /**
@@ -35,12 +36,12 @@ public class EuchreProtocol {
 	 * 
 	 * @param input A comma separated list of tokens
 	 */
-	public void serverParse(String input){
+	public void serverParse(String input, String fromClientNote){
 		String token;
 		StringTokenizer parser = new StringTokenizer(input,",");
 
 		if(debug)
-			System.out.println("PARSING '" + input + "'");
+			System.out.println("serverParse PARSING '" + input + "'" + " note: " + fromClientNote);
 
 		while(parser.hasMoreTokens()){
 			token = parser.nextToken();
@@ -49,12 +50,12 @@ public class EuchreProtocol {
 				String type = parser.nextToken();
 				String name = parser.nextToken();
 				String difficulty = parser.nextToken();
-				int randomNum = Integer.parseInt(parser.nextToken());
+				int playerID = Integer.parseInt(parser.nextToken());
 
 				if(debug)
-					System.out.println("RegisterPlayer incoming - Player: " + name + " id " + randomNum + " numConnectedClients " + numConnectedClients);
+					System.out.println("RegisterPlayer incoming - Player: " + name + " id " + playerID + " numConnectedClients " + numConnectedClients);
 
-				String newPlayerRegistryString = name + "," + randomNum + "," + type + "," + difficulty;
+				String newPlayerRegistryString = name + "," + playerID + "," + type + "," + difficulty;
 				if(connectedClients == null) {
 					connectedClients = newPlayerRegistryString;
 				}
@@ -65,7 +66,7 @@ public class EuchreProtocol {
 					if (numConnectedClients == 3){
 						GameLog.outInformation("EP", "Got 3 players, informing all connected clients! EVENT_BIG_A0000 - " + connectedClients);
 						server.toClients("SetPlayers," + connectedClients);
-						serverParse("SetPlayers," + connectedClients);
+						serverParse("SetPlayers," + connectedClients, "SetPlayers_Got3Clients");
 						GameRunnerCallback.allPlayersConnectedToHost();
 					}
 				}
@@ -76,6 +77,7 @@ public class EuchreProtocol {
 						GameLog.outInformation("EP", "numConnectedClients is ZERO, do nothing?");
 						break;
 					case 1:
+						GameLobby a = manager.getLobby();
 						manager.getLobby().setPlayer2Status(name);
 						break;
 					case 2:
@@ -176,15 +178,15 @@ public class EuchreProtocol {
 				server.toClients("SetPlayers," + connectedClients);
 			}
 			else if(token.equals("SetNextPlayerTurn")){
-
 				manager.setNextPlayerTurn();
+				GameLog.outInformation("EP", "serverParse got SetNextPlayerTurn, sending same to all clients");
 				server.toClients("SetNextPlayerTurn");
-
 			}
 			else if(token.equals("SetPlayerTurn")){
 				int id = Integer.parseInt(parser.nextToken());
 
 				manager.setTurnPlayerID(id);
+				GameLog.outInformation("EP", "serverParse got SetPlayerTurn, sending same to all clients. targetId: " + id);
 				server.toClients("SetPlayerTurn,"+id);
 			}
 			else if(token.equals("PickItUp")){
@@ -214,7 +216,6 @@ public class EuchreProtocol {
 			else{
 				if(debug)
 					System.out.println("Undefined token: " + token);
-
 			}
 		}
 
@@ -372,12 +373,10 @@ public class EuchreProtocol {
 
 			}
 			else if(token.equals("SetNextPlayerTurn")){
-
 				manager.setNextPlayerTurn();
 				if (!manager.getPlayerIAm().isHuman()){
 					manager.getPlayerIAm().makeTurn();
 				}
-
 			}
 			else if(token.equals("SettingSuit")){
 				manager.getGameBoard().settingSuit();

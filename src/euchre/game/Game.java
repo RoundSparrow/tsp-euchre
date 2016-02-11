@@ -11,17 +11,20 @@ import javax.swing.JOptionPane;
 
 /**
  * @author Timothy Ward
- *
+ * @author Stephen A. Gutknecht
+ * 
  * This class is the highest order class of the Euchre program. It is responsible for the highest level interactions between components.
  */
 public class Game {
 
 	public static final boolean DEBUG_EXEC_OUTPUT = false;
+	public static final boolean LOCALGAME_SHOW_LOBBY = true;
+
 
 	/**
-	 * This method is the first method called in the program. This method is
+	 * This method is the first method called in the program. This method is 
 	 * responsible for instantiating all objects and running the overall program.
-	 *
+	 * 
 	 * @param args The String argument array.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
@@ -64,12 +67,14 @@ public class Game {
 					ClientNetworkManager client = createNewClient(GM, "localhost");
 
 					//make a new AI
-					AI computer = new MediumAI(client);
+					AI computer;
 
 					//make a new game board and a new human to pass to the game manager
-					if (difficulty == "e") computer = new EasyAI(client);
+					if (difficulty == "e")      computer = new EasyAI(client);
 					else if (difficulty == "m") computer = new MediumAI(client);
 					else if (difficulty == "h") computer = new HardAI(client);
+					else                        computer = new MediumAI(client);
+
 					GameBoard GB = new GameBoard();
 					GB.setGameManager(GM);
 					GM.setGameBoard(GB);
@@ -106,7 +111,7 @@ public class Game {
 
 	/**
 	 * This method creates the specified number of AIs in separate instantiations of the software.
-	 *
+	 * 
 	 * @param numberOfAIs The number of AI's to spawn.
 	 * @param difficultyOfAIOne The difficulty (if any) of the first AI.
 	 * @param difficultyOfAITwo The difficulty (if any) of the second AI.
@@ -114,12 +119,11 @@ public class Game {
 	 */
 	private static void spawnAIs(int numberOfAIs, char difficultyOfAIOne, char difficultyOfAITwo, char difficultyOfAIThree){
 		//return if the number of AIs is zero
-		if (numberOfAIs == 0) return;
+		if(numberOfAIs == 0) return;
 
 		//if there are more than zero AIs, spawn up to three
 		try {
-         // ToDo: validate the Enchure.jar path is correct on disk. Is there a way to ask Java about the path of our own executing jar?
-			String[] cmdarray = {"java", "-jar", System.getProperty("user.dir") + "/Euchre.jar" , "-ai", "" + difficultyOfAIOne, "AI One"};
+			String[] cmdarray = {"java", "-jar", System.getProperty("user.dir") + "/build/jar/Euchre.jar" , "-ai", "" + difficultyOfAIOne, "AI One"};
 
 			//spawn the first AI
 			if (difficultyOfAIOne != 'x'){
@@ -147,8 +151,8 @@ public class Game {
 				GameLog.outInformation("GA", "spawnAIs difficultyOfAIThree " + difficultyOfAIThree + " args: " + Arrays.toString(cmdarray));
 				executeApplicationInstance(cmdarray);
 			}
-			Thread.sleep(3500);
-		}
+			Thread.sleep(3500);		
+		} 
 		catch (Throwable e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -157,7 +161,7 @@ public class Game {
 
 	private static void executeApplicationInstance(String[] args) {
 		try {
-			if (1==2)
+			if (1==1)
 			{
 				GameLog.outError("GM", "skipping launch");
 				return;
@@ -199,13 +203,13 @@ public class Game {
 	/**
 	 * This method will just create a host object, and will also create the appropriately
 	 * specified number of AI and Human players to accompany.
-	 *
+	 * 
 	 * @param GM The GameManager object for the network and game board.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
 	private static void createHostPlayer(GameManager GM) throws InterruptedException{
 
-		//create the new host and it's game board
+		//create the new host and it's game board 
 		GM.newPlayer(new Human());
 		GameBoard GB = new GameBoard();
 		GB.setGameManager(GM);
@@ -220,10 +224,12 @@ public class Game {
 
 		//make the specified number of AI's once the user specifies the correct number of AIs
 		while (hostSetup.setupComplete()==false) Thread.sleep(500);
-		server.getParser().serverParse("RegisterPlayer,Human," + hostSetup.getPlayerName() + ",x" + "," + GM.getp1().getPlayerID());
+
+		String packetPayload = "RegisterPlayer,Human," + hostSetup.getPlayerName() + ",x" + "," + GM.getp1().getPlayerID();
+		server.getParser().serverParse(packetPayload, "Game_HumanSetup");
 		spawnAIs(hostSetup.getNumAIs(), hostSetup.getGameLobby().getplayer2Difficulty(), hostSetup.getGameLobby().getplayer3Difficulty(), 'x');
 
-		//wait until the user has input name and number of additional human players
+		//wait until the user has input name and number of additional human players	
 		while (hostSetup.getGameLobby() == null || hostSetup.getGameLobby().setupComplete() == false) Thread.sleep(500);
 
 		//initialize the host's game board
@@ -236,7 +242,7 @@ public class Game {
 	/**
 	 * The method will create a local only game, it is for when a user chooses to play against
 	 * three computers.
-	 *
+	 * 
 	 * @param GM The GameManager object for the network, and game board.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
@@ -257,7 +263,13 @@ public class Game {
 		while (local.getSetupComplete() == false) Thread.sleep(500);
 
 		// Register the local human player
-		server.getParser().serverParse("RegisterPlayer,Human," + local.getPlayerName() + ",x" + "," + GM.getp1().getPlayerID());
+		String packetPayload = "RegisterPlayer,Human," + local.getPlayerName() + ",x" + "," + GM.getp1().getPlayerID();
+		server.getParser().serverParse(packetPayload, "Game_HumanSetup");
+
+		// We will not show the lobby GUI, but we will create it for the sake of not having a null object
+		GameLobby lobby = new GameLobby(1, local.getPlayerName(), GM);
+		lobby.setVisible(LOCALGAME_SHOW_LOBBY);
+		GM.setLobby(lobby);
 
 		spawnAIs(3, local.getComputer1Difficulty(), local.getComputer2Difficulty(), local.getComputer3Difficulty());
 		// the final launch of in spawnAIs did a 3500ms sleep
@@ -295,7 +307,7 @@ public class Game {
 
 	/**
 	 * This method will create a client object.
-	 *
+	 * 
 	 * @param GM The GameManager object for the network and to pass the new client to.
 	 * @param GUI The welcome window for user input.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
@@ -331,7 +343,7 @@ public class Game {
 
 	/**
 	 * This method creates a new server, and passes all of the needed references regarding it.
-	 *
+	 * 
 	 * @param GM The GameManager that the server and it need a reference to and from.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
@@ -346,7 +358,7 @@ public class Game {
 
 	/**
 	 * This method creates a new server, and passes all of the needed references regarding it.
-	 *
+	 * 
 	 * @param GM The GameManager that the server and it need a reference to and from.
 	 * @param String The IP address that the client needs to connect to.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.

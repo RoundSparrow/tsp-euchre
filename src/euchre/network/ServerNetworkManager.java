@@ -97,9 +97,9 @@ public class ServerNetworkManager extends Thread{ // extends NetworkManager { Ab
 	 * 
 	 * @param message The message to be parsed by EuchreProtocol
 	 */
-	public void parse(String message){
+	public void parse(String message, String senderNote){
 		
-		protocol.serverParse(message);
+		protocol.serverParse(message, senderNote);
 	}
 	
 	/**
@@ -146,7 +146,7 @@ public class ServerNetworkManager extends Thread{ // extends NetworkManager { Ab
 			if(listening)
 			{
 				if(debug)
-					System.out.println("Listening for connections on port " + serverPort);
+					System.out.println("Server Listening for connections on port " + serverPort);
 
 				try {
 					Socket newSocket = serverSocket.accept();
@@ -157,7 +157,7 @@ public class ServerNetworkManager extends Thread{ // extends NetworkManager { Ab
 					//start the thread
 					newConnection.start();
 					if(debug)
-						System.out.println("Connection recieved/started, count " + inConnectionCount + " IP " + newSocket.getInetAddress());
+						System.out.println("Connection recieved/started, count " + inConnectionCount + " IP " + newSocket.getInetAddress() + " port " + newSocket.getPort());
 
 				} catch (IOException e) {
 					GameLog.outError("SNM", "Exception in connnections listening loop");
