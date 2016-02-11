@@ -1,6 +1,7 @@
 package euchre.player;
 
 import euchre.game.GameLog;
+import euchre.game.GameRunnerCallback;
 import euchre.gui.*;
 import euchre.network.ClientNetworkManager;
 import euchre.network.ServerNetworkManager;
@@ -64,6 +65,10 @@ public class GameManager {
 	/**
 	 * Creates a new deck of cards, shuffles the cards, and then
 	 * deals five cards to each player..
+	 *
+	 * ToDo: review rules to see that cards are dealt in the correct compliance with rules
+	 * ToDo: add an option for the player to cut the deck
+	 * reference on dealing and cutting deck: http://www.bicyclecards.com/how-to-play/euchre/
 	 */
 	private void deal(){
 		GameLog.outInformation("GM", "game deal()");
@@ -116,13 +121,15 @@ public class GameManager {
 	 * @param GB The GameBoard.
 	 */
 	public void initializeGameBoard(GameBoard GB) {
-		if (GB.getGM() == null);
-		if (GB.getGM().getPlayerIAm() == null);
-		if (GB.getGM().getPlayerIAm().isHuman());
-
-		// AI clients don't actually need a graphical interface
-		if (GB.getGM().getPlayerIAm().isHuman()){
+		if (GameRunnerCallback.settingShowGameBoardForAI())
+		{
 			GB.setVisible(true);
+		}
+		else {
+			// AI clients don't actually need a graphical interface
+			if (GB.getGM().getPlayerIAm().isHuman()) {
+				GB.setVisible(true);
+			}
 		}
 		GB.updateBoard();
 	}
@@ -230,6 +237,27 @@ public class GameManager {
 		else if (currentTurnPlayerID == player4.getPlayerID()){
 			currentTurnPlayerID = player1.getPlayerID();
 			board.updateBoard();
+		}
+	}
+
+	public Player getCurrentTurnPlayer()
+	{
+		if(currentTurnPlayerID == player1.getPlayerID()){
+			return player1;
+		}
+		else if (currentTurnPlayerID == player2.getPlayerID()){
+			return player2;
+		}
+		else if (currentTurnPlayerID == player3.getPlayerID()){
+			return player3;
+		}
+		else if (currentTurnPlayerID == player4.getPlayerID()){
+			return player4;
+		}
+		else
+		{
+			GameLog.outError("GM", "getCurrentTurnPlayer unable to match currentTurnPlayerID " + currentTurnPlayerID);
+			return null;
 		}
 	}
 
@@ -378,6 +406,7 @@ public class GameManager {
 
 	public void setTurnPlayerID(int id){
 		currentTurnPlayerID = id;
+		Player testCurrentPlayer = getCurrentTurnPlayer();
 		board.updateBoard();
 	}
 

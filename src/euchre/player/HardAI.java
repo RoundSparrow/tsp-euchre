@@ -704,6 +704,4 @@ public class HardAI implements AI{
 	public void setCard(int number, char value, char suit){
 		hand[number] = new Card(value, suit);
 	}
-
-
 }

@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 /**
  * @author Timothy Ward
  * @author Stephen A. Gutknecht
- * 
+ *
  * This class is the highest order class of the Euchre program. It is responsible for the highest level interactions between components.
  */
 public class Game {
@@ -22,9 +22,9 @@ public class Game {
 
 
 	/**
-	 * This method is the first method called in the program. This method is 
+	 * This method is the first method called in the program. This method is
 	 * responsible for instantiating all objects and running the overall program.
-	 * 
+	 *
 	 * @param args The String argument array.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
@@ -111,7 +111,7 @@ public class Game {
 
 	/**
 	 * This method creates the specified number of AIs in separate instantiations of the software.
-	 * 
+	 *
 	 * @param numberOfAIs The number of AI's to spawn.
 	 * @param difficultyOfAIOne The difficulty (if any) of the first AI.
 	 * @param difficultyOfAITwo The difficulty (if any) of the second AI.
@@ -151,8 +151,8 @@ public class Game {
 				GameLog.outInformation("GA", "spawnAIs difficultyOfAIThree " + difficultyOfAIThree + " args: " + Arrays.toString(cmdarray));
 				executeApplicationInstance(cmdarray);
 			}
-			Thread.sleep(3500);		
-		} 
+			Thread.sleep(3500);
+		}
 		catch (Throwable e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -161,7 +161,7 @@ public class Game {
 
 	private static void executeApplicationInstance(String[] args) {
 		try {
-			if (1==1)
+			if (1==2)
 			{
 				GameLog.outError("GM", "skipping launch");
 				return;
@@ -203,13 +203,13 @@ public class Game {
 	/**
 	 * This method will just create a host object, and will also create the appropriately
 	 * specified number of AI and Human players to accompany.
-	 * 
+	 *
 	 * @param GM The GameManager object for the network and game board.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
 	private static void createHostPlayer(GameManager GM) throws InterruptedException{
 
-		//create the new host and it's game board 
+		//create the new host and it's game board
 		GM.newPlayer(new Human());
 		GameBoard GB = new GameBoard();
 		GB.setGameManager(GM);
@@ -229,7 +229,7 @@ public class Game {
 		server.getParser().serverParse(packetPayload, "Game_HumanSetup");
 		spawnAIs(hostSetup.getNumAIs(), hostSetup.getGameLobby().getplayer2Difficulty(), hostSetup.getGameLobby().getplayer3Difficulty(), 'x');
 
-		//wait until the user has input name and number of additional human players	
+		//wait until the user has input name and number of additional human players
 		while (hostSetup.getGameLobby() == null || hostSetup.getGameLobby().setupComplete() == false) Thread.sleep(500);
 
 		//initialize the host's game board
@@ -242,7 +242,7 @@ public class Game {
 	/**
 	 * The method will create a local only game, it is for when a user chooses to play against
 	 * three computers.
-	 * 
+	 *
 	 * @param GM The GameManager object for the network, and game board.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
@@ -307,7 +307,7 @@ public class Game {
 
 	/**
 	 * This method will create a client object.
-	 * 
+	 *
 	 * @param GM The GameManager object for the network and to pass the new client to.
 	 * @param GUI The welcome window for user input.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
@@ -343,7 +343,7 @@ public class Game {
 
 	/**
 	 * This method creates a new server, and passes all of the needed references regarding it.
-	 * 
+	 *
 	 * @param GM The GameManager that the server and it need a reference to and from.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.
 	 */
@@ -358,7 +358,7 @@ public class Game {
 
 	/**
 	 * This method creates a new server, and passes all of the needed references regarding it.
-	 * 
+	 *
 	 * @param GM The GameManager that the server and it need a reference to and from.
 	 * @param String The IP address that the client needs to connect to.
 	 * @throws InterruptedException Not thrown, the program will wait for input forever because this is not thrown.

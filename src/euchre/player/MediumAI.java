@@ -1,6 +1,7 @@
 package euchre.player;
 
 import euchre.game.GameLog;
+import euchre.game.GameRunnerCallback;
 import euchre.gui.GameBoard;
 import euchre.network.ClientNetworkManager;
 
@@ -25,13 +26,15 @@ public class MediumAI implements AI{
 	private Card playCard;
 	private ClientNetworkManager clientManager;
 	private Card led = null;
-	private int playerID = (int)(Math.random()*5000000);
+	private int playerID = -1;
 
 	public MediumAI(ClientNetworkManager client){
+		playerID = GameRunnerCallback.getArtificialIntelligenceNextPlayerID();
 		clientManager = client;
 	}
 
 	public MediumAI(ClientNetworkManager client, String name2) {
+		playerID = GameRunnerCallback.getArtificialIntelligenceNextPlayerID();
 		name = name2;
 		clientManager = client;
 	}
@@ -208,7 +211,6 @@ public class MediumAI implements AI{
 			trump = 0;
 			return false;
 		}
-
 	}
 
 	/**
@@ -239,6 +241,14 @@ public class MediumAI implements AI{
 			playCard = CardEvaluator.highestCardInHand(trump, trump, hand);
 		}
 		else{
+			if (led == null)
+			{
+				GameLog.outError("MediumAI", "why is led null here? ERROR_AI_M_0000");
+				if (GameRunnerCallback.applicationExitBehaviorForSituation(2000))
+				{
+					GameRunnerCallback.applicationExitNow(2000);
+				}
+			}
 			playCard = CardEvaluator.lowestCardInHand(trump, led.getSuit(), hand);
 		}
 

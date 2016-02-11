@@ -104,5 +104,4 @@ public interface AI extends Player{
 
 	public void setCard(int number, char value, char suit);
 
-
 }

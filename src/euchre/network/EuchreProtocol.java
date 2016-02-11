@@ -370,7 +370,6 @@ public class EuchreProtocol {
 				if (!manager.getPlayerIAm().isHuman()){
 					manager.getPlayerIAm().makeTurn();
 				}
-
 			}
 			else if(token.equals("SetNextPlayerTurn")){
 				manager.setNextPlayerTurn();

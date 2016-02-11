@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import euchre.game.GameLog;
+import euchre.game.GameRunnerCallback;
 import euchre.player.GameManager;
 
 
@@ -188,14 +189,22 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 						//output the message
 						if(debug)
 							System.out.println("Message from server [localPort " + clientSocket.getLocalPort() + "]: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort() + " msg: " + inputLine);
+
 						protocol.clientParse(inputLine);
 					}
 
 					GameLog.outWarning("CNM", "CNM_E1100 socket readLine returned null, server closed our socket?");
 					// This is the indicator that the remote, server, closed connection
 					running = false;
-					// exit the entire loop
-					return;
+
+					if (GameRunnerCallback.applicationExitBehaviorForSituation(1000))
+					{
+						GameRunnerCallback.applicationExitNow(1000);
+					}
+					else {
+						// exit the entire loop
+						return;
+					}
 				} catch (IOException e) {
 					running = false;
 					GameLog.outError("CNM", "CNM_E1101 Exception on reading from server socket");

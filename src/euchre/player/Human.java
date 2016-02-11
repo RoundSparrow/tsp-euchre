@@ -19,7 +19,12 @@ public class Human implements Player{
 	private boolean orderUp = false;
 	private boolean responded = false;
 	private int cardRemoved;
-	private int playerID = (int)(Math.random() * 5000000);
+	private int playerID = generatePlayerID();
+
+	public int generatePlayerID() {
+		return (int)(Math.random() * 5000000);
+	}
+
 	boolean isHost = false;
 	
 	EuchreProtocol protocol = new EuchreProtocol();
@@ -30,7 +35,6 @@ public class Human implements Player{
 	 * Constructor for the Human class.
 	 */
 	public Human(){
-
 	}
 
 	/**
@@ -127,7 +131,6 @@ public class Human implements Player{
 
 		responded = false;
 		return orderUp;
-
 	}
 
 	/**
@@ -265,6 +268,7 @@ public class Human implements Player{
 		name = n;
 	}
 
+	// ToDo: this methid is identical in all the copies (confirm), can't we just use the base one?   Other methods like that?
 	public int getNumber() {
 		return playerNum;
 	}
@@ -277,7 +281,6 @@ public class Human implements Player{
 	 * Unimplemented - Implemented for AI only.
 	 */
 	public void makeTurn(){
-
 	}
 
 	public boolean isTurn(){
@@ -300,7 +303,5 @@ public class Human implements Player{
 	public void setCard(int number, char value, char suit){
 		hand[number] = new Card(value, suit);
 	}
-
-
 
 }
