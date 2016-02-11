@@ -2,28 +2,32 @@ package euchre.network;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.LinkedList;
 
+import euchre.game.GameLog;
 import euchre.player.GameManager;
 
 /**
  * Manages the server's network connections
  * 
  * @author mdhelgen
+ * @author Stephen A. Gutknecht
  *
  */
 public class ServerNetworkManager extends Thread{ // extends NetworkManager { Abstract this out later
 
 	boolean listening = true;
-	ServerSocket serverSocket = null;
-	int port = 4444;
-	EuchreProtocol protocol;
-	GameManager manager;
+	private ServerSocket serverSocket = null;
+	private int serverPort = 4444;
+	private EuchreProtocol protocol;
+	private GameManager manager;
 	
 	boolean debug;
 
 	//contains references to all of the communication threads for socket connections
-	LinkedList<EuchreConnectionThread> threads = new LinkedList<EuchreConnectionThread>();
+	private LinkedList<EuchreConnectionThread> threads = new LinkedList<EuchreConnectionThread>();
+
 
 	/**
 	 * 
@@ -69,10 +73,7 @@ public class ServerNetworkManager extends Thread{ // extends NetworkManager { Ab
 	 * @return The number of dispatched client threads
 	 */
 	public int getNumClients(){
-
-
 		return threads.size();
-
 	}
 
 	
@@ -84,7 +85,7 @@ public class ServerNetworkManager extends Thread{ // extends NetworkManager { Ab
 	public void toClients(String tokenizedString){
 
 		if(debug)
-			System.out.println(tokenizedString);
+			System.out.println("toClients output: " + tokenizedString);
 		
 		for(EuchreConnectionThread t : threads){
 			t.getPrintWriter().println(tokenizedString);
@@ -128,40 +129,41 @@ public class ServerNetworkManager extends Thread{ // extends NetworkManager { Ab
 	 */
 	public void run(){
 
-		//create the server socket on port 4444
+		//create the server socket on serverPort 4444
 		try{
-			serverSocket = new ServerSocket(port);
+			serverSocket = new ServerSocket(serverPort);
 		}
 		catch(IOException e){
-			System.err.println("Could not listen on port: " + port);
+			System.err.println("Server Could not listen on port: " + serverPort);
 			e.printStackTrace();
+			return;
 		}
 
+		int inConnectionCount = 0;
 		//continuously run this loop while the thread is running
-		while(true){
-
-			//if the thread is not listening, do not accept connections
+		while (listening){
+			// if the thread is not listening, do not accept connections
 			if(listening)
 			{
-
 				if(debug)
-					System.out.println("Listening for connections");
-				try {
+					System.out.println("Listening for connections on port " + serverPort);
 
+				try {
+					Socket newSocket = serverSocket.accept();
+					inConnectionCount++;
+					EuchreConnectionThread newConnection = new EuchreConnectionThread("EuchreConn_" + inConnectionCount, newSocket, this);
 					//accept a connection and dispatch a new thread with that socket as a parameter
-					threads.addLast(new EuchreConnectionThread("Thread",serverSocket.accept(), this));
+					threads.addLast(newConnection);
 					//start the thread
-					threads.getLast().start();
+					newConnection.start();
 					if(debug)
-						System.out.println("Connection recieved/started");
+						System.out.println("Connection recieved/started, count " + inConnectionCount + " IP " + newSocket.getInetAddress());
 
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					GameLog.outError("SNM", "Exception in connnections listening loop");
 					e.printStackTrace();
-
 				}
-			}	
-
+			}
 		}
 	}
 }

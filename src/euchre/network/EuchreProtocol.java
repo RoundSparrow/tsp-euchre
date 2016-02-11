@@ -3,11 +3,15 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
+import euchre.game.GameLog;
+import euchre.game.GameRunnerCallback;
 import euchre.player.*;
 
 /**
  * @author mdhelgen
- * Facilitates network communication between the clients and the server. 
+ * @author Stephen A. Gutknecht
+ *
+ * Facilitates network communication between the clients and the server.
  */
 public class EuchreProtocol {
 
@@ -17,14 +21,13 @@ public class EuchreProtocol {
 	private ServerNetworkManager server;
 	String connectedClients;
 
-	boolean debug = false;
+	boolean debug = true;
 
 	/**
 	 * Get any necessary references
 	 * 
 	 */
 	public EuchreProtocol(){
-
 	}
 
 	/**
@@ -35,8 +38,10 @@ public class EuchreProtocol {
 	public void serverParse(String input){
 		String token;
 		StringTokenizer parser = new StringTokenizer(input,",");
+
 		if(debug)
 			System.out.println("PARSING '" + input + "'");
+
 		while(parser.hasMoreTokens()){
 			token = parser.nextToken();
 
@@ -47,23 +52,29 @@ public class EuchreProtocol {
 				int randomNum = Integer.parseInt(parser.nextToken());
 
 				if(debug)
-					System.out.println("Player: " + name);
+					System.out.println("RegisterPlayer incoming - Player: " + name + " id " + randomNum + " numConnectedClients " + numConnectedClients);
 
-
-				if(connectedClients == null)
-					connectedClients = name + ","+ randomNum+","+type+","+difficulty;
+				String newPlayerRegistryString = name + "," + randomNum + "," + type + "," + difficulty;
+				if(connectedClients == null) {
+					connectedClients = newPlayerRegistryString;
+				}
 				else{
-					connectedClients = connectedClients +"," +name + "," + randomNum+","+type+","+difficulty;
+					//
+					connectedClients = connectedClients + "," + newPlayerRegistryString;
 					numConnectedClients++;
-					if(numConnectedClients == 3){
-						server.toClients("SetPlayers,"+connectedClients);
-						serverParse("SetPlayers,"+connectedClients);
+					if (numConnectedClients == 3){
+						GameLog.outInformation("EP", "Got 3 players, informing all connected clients! EVENT_BIG_A0000 - " + connectedClients);
+						server.toClients("SetPlayers," + connectedClients);
+						serverParse("SetPlayers," + connectedClients);
+						GameRunnerCallback.allPlayersConnectedToHost();
 					}
 				}
 
-
 				try{
 					switch(numConnectedClients){
+					case 0:
+						GameLog.outInformation("EP", "numConnectedClients is ZERO, do nothing?");
+						break;
 					case 1:
 						manager.getLobby().setPlayer2Status(name);
 						break;
@@ -73,19 +84,23 @@ public class EuchreProtocol {
 					case 3:
 						manager.getLobby().setPlayer4Status(name);
 						break;
+					default:
+						GameLog.outError("EP", "why do I have unexpected numConnectedClients? " + numConnectedClients);
+						break;
 					}
-
 				}
 				catch(NullPointerException e){
-
+					GameLog.outError("EP", "NullPointerException setting player status name: " + name);
 				}
-
-			}			
+				GameRunnerCallback.registerPlayerClient(numConnectedClients, newPlayerRegistryString);
+			}
 
 			else if (token.equals("CLOSE")){
 				JOptionPane.showMessageDialog(null, "Another Player has quit. The program will now exit", "Error", JOptionPane.ERROR_MESSAGE);
 				server.toClients("CLOSE");
-				System.exit(0);
+				// System.exit(0);
+				GameLog.outError("GM", "App wants to call System.exit(0");
+				return;
 			}
 			else if(token.equals("SetPlayers")){
 				Player one;
@@ -150,7 +165,6 @@ public class EuchreProtocol {
 					System.out.println("Player 3 name:" + manager.getp3().getName());
 					System.out.println("Player 4 name:" + manager.getp4().getName());
 				}
-
 			}
 
 			else if(token.equals("SettingSuit")){
@@ -196,19 +210,12 @@ public class EuchreProtocol {
 				manager.getGameBoard().playCard(c, playernum);
 
 				server.toClients("PlayCard,"+card+","+playernum);
-
 			}
-
-
 			else{
-
 				if(debug)
 					System.out.println("Undefined token: " + token);
 
 			}
-
-
-
 		}
 
 	}
@@ -223,7 +230,7 @@ public class EuchreProtocol {
 		StringTokenizer parser = new StringTokenizer(input,",");
 
 		if(debug)
-			System.out.println("PARSING - " + input);
+			System.out.println("clientParse PARSING - " + input);
 
 		while(parser.hasMoreTokens()){
 			token = parser.nextToken();
@@ -303,17 +310,19 @@ public class EuchreProtocol {
 				if (manager.getPlayerIAm().isHuman() == true){
 					JOptionPane.showMessageDialog(null, "Another Player has quit. The program will now exit", "Error", JOptionPane.ERROR_MESSAGE);
 				}
-				System.exit(0);
+				// System.exit(0);
+				return;
 			}
 			else if(token.equals("SetTeam")){
 				int player = Integer.parseInt(parser.nextToken());
 				int team = Integer.parseInt(parser.nextToken());
 				manager.setTeam(player, team);
 				if(debug)
-					System.out.println("SetTeam("+player+","+team+")");
+					System.out.println("Incoming SetTeam player " + player + " team " + team);
 			}
 			else if(token.equals("SpawnGameBoard")){
 				manager.initializeGameBoard(manager.getGameBoard());
+				GameLog.outInformation("GA", "clientParse token SpawnGameBoard just did initializeGameBoard, calling setTeamsComplete true. Thread: " + Thread.currentThread());
 				manager.setTeamsComplete(true);
 			}
 			else if(token.equals("TeamWhoOrdered")){
@@ -399,7 +408,6 @@ public class EuchreProtocol {
 
 			}
 
-
 			else
 				if(debug)
 					System.out.println("Undefined token: " + token);
@@ -415,8 +423,4 @@ public class EuchreProtocol {
 	public void setServerNetworkManager(ServerNetworkManager s){
 		server = s;
 	}
-
-
-
-
 }

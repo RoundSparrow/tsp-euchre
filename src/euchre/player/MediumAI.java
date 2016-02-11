@@ -1,5 +1,6 @@
 package euchre.player;
 
+import euchre.game.GameLog;
 import euchre.gui.GameBoard;
 import euchre.network.ClientNetworkManager;
 
@@ -7,6 +8,7 @@ import euchre.network.ClientNetworkManager;
 /**
  * 
  * @author Kyle Kary
+ * @author Stephen A. Gutknecht
  *
  */
 
@@ -48,8 +50,9 @@ public class MediumAI implements AI{
 			played[1] = tmpPlayed[1];
 		if (tmpPlayed[0]!=null)
 			played[2] = tmpPlayed[2];
+
 		if (action.equals("Nothing")){
-			System.out.println("Something went horribly wrong, " + clientManager.getGameManager().getPlayerIAm().getName() + " died");
+			GameLog.outError("MediumAI", "MediumAI Something went horribly wrong, " + clientManager.getGameManager().getPlayerIAm().getName() + " died");
 		}
 
 		if (action.equals("Play Card")){
@@ -139,7 +142,6 @@ public class MediumAI implements AI{
 				break;
 			}
 		}
-
 	}
 
 
@@ -325,10 +327,7 @@ public class MediumAI implements AI{
 			}
 		}
 
-
-
 		return playCard;
-
 	}
 
 	/**
@@ -349,7 +348,6 @@ public class MediumAI implements AI{
 		}
 
 		numCards++;
-
 	}
 
 	/**
@@ -359,7 +357,6 @@ public class MediumAI implements AI{
 	public Card discard() {
 		numCards--;
 		return null;
-
 	}
 
 	/**
@@ -410,7 +407,6 @@ public class MediumAI implements AI{
 		}
 
 		return trump;
-
 	}
 
 	/**
@@ -540,6 +536,5 @@ public class MediumAI implements AI{
 	public void setCard(int number, char value, char suit){
 		hand[number] = new Card(value, suit);
 	}
-
 
 }

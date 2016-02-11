@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import euchre.game.GameLog;
 import euchre.player.GameManager;
 
 
@@ -16,9 +17,12 @@ import euchre.player.GameManager;
  * action based on the formatted string.
  * 
  * @author mdhelgen
+ * @author Stephen A. Gutknecht
  *
  */
 public class ClientNetworkManager extends Thread{ // extends NetworkManager {   abstract this out later
+
+	public static final String HOST_LOCALHOST = "localhost";
 
 	Socket clientSocket = null;
 	PrintWriter out = null;
@@ -41,7 +45,7 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 	 */
 	public ClientNetworkManager(){
 
-		hostname = "localhost";
+		hostname = HOST_LOCALHOST;
 		protocol = new EuchreProtocol();
 		this.debug = protocol.debug;
 	}
@@ -66,7 +70,7 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 	 */
 	public void registerPlayer(String name, int id){
 
-		toServer("Name,"+name+","+id);
+		toServer("Name," + name + "," + id);
 	}
 
 	/**
@@ -75,6 +79,8 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 	 * @param tokenizedString A comma delimited message to be interpreted by EuchreProtocol by the server
 	 */
 	public void toServer(String tokenizedString){
+		if (debug)
+			GameLog.outInformation("CNM", "sending toServer " + tokenizedString);
 
 		out.println(tokenizedString);
 	}
@@ -104,11 +110,12 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 	 */
 	public void run(){
 
+		GameLog.outInformation("CNM", "Starting client connect loop. host " + hostname + " port " + port);
+
 		//run this loop continually
 		while(true){
 
 			if(connecting){
-
 
 				// create the new socket connection
 				try {
@@ -123,12 +130,11 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 
 					// host does not exist yet
 				} catch (IOException e) {
-					System.out.println("Connection refused, retry in 5 seconds");
+					System.out.println("Connection to server refused, retry in 5 seconds. host " + hostname + " port " + port);
 					running = false;
 					try {
 						// wait for 5 seconds
 						Thread.sleep(5000);
-
 					} catch (InterruptedException e1) {
 						e1.printStackTrace();
 					}
@@ -136,6 +142,7 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 					continue;
 				}
 
+				GameLog.outInformation("CNM", "Client now connected to server.");
 				running = true;
 				isConnected = true;
 
@@ -149,24 +156,48 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 					e.printStackTrace();
 				}
 				if(debug)
-					System.out.println("connected to server");
+					System.out.println("Connected to server " +  clientSocket.getInetAddress() + ":" + clientSocket.getPort() + " my localPort " + clientSocket.getLocalPort());
 
 				//send a message to the server
 				//out.println("CLIENT");
 				connecting = false;
-
 			}
-			if(running){
+
+			if (running) {
+				// Note: Java design is such that this onnly tells us that our local end closed connection
+				//  ref: http://stackoverflow.com/questions/10240694/java-socket-api-how-to-tell-if-a-connection-has-been-closed
+				if (! clientSocket.isConnected()) {
+					running = false;
+					GameLog.outError("CNM", "CNM_E1000 clientSocket NOT isConnected");
+					// exit the entire loop
+					return;
+				}
+				// Note: Java design is such that this onnly tells us that our local end closed connection
+				//  ref: http://stackoverflow.com/questions/10240694/java-socket-api-how-to-tell-if-a-connection-has-been-closed
+				if (clientSocket.isClosed()) {
+					running = false;
+					GameLog.outError("CNM", "CNM_E1001 clientSocket isClosed");
+					// exit the entire loop
+					return;
+				}
+
+				GameLog.outInformation("CNM", "Starting clientParse loop of commands from server.");
 				try {
 					while((inputLine = in.readLine()) != null){
 
 						//output the message
 						if(debug)
-							System.out.println("Message from server:");
+							System.out.println("Message from server: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort() + " msg: " + inputLine);
 						protocol.clientParse(inputLine);
 					}
+
+					GameLog.outWarning("CNM", "CNM_E1100 socket readLine returned null, server closed our socket?");
+					// This is the indicator that the remote, server, closed connection
+					running = false;
+					// exit the entire loop
+					return;
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					GameLog.outError("CNM", "CNM_E1101 Exception on reading from server socket");
 					e.printStackTrace();
 				}
 			}	

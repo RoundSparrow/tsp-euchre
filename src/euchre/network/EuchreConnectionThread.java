@@ -4,22 +4,24 @@ package euchre.network;
 import java.net.*;
 import java.io.*;
 
+import euchre.game.GameLog;
+
 /**
  * A Runnable thread to facilitate the server's connections with the clients
  * 
  * @author mdhelgen
+ * @author Stephen A. Gutknecht
  *
  */
 
 public class EuchreConnectionThread extends Thread {
 
 	private Socket socket = null;
-	BufferedReader in;
+	private BufferedReader in;
 	private boolean running = true;
-	EuchreProtocol protocol;
-	ServerNetworkManager server;
-	PrintWriter out = null;
-
+	private EuchreProtocol protocol;
+	private ServerNetworkManager server;
+	private PrintWriter out = null;
 
 
 	/**
@@ -36,10 +38,9 @@ public class EuchreConnectionThread extends Thread {
 		try {
 			out = new PrintWriter(socket.getOutputStream(), true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			GameLog.outError("ECT", "IOException creating socket output");
 			e.printStackTrace();
 		}
-
 	}
 
 	/**
@@ -54,7 +55,7 @@ public class EuchreConnectionThread extends Thread {
 			String inputLine;
 
 			//continually run this loop
-			while(true){
+			while (true){
 
 				if(running)
 					//if a message is recieved
@@ -65,20 +66,25 @@ public class EuchreConnectionThread extends Thread {
 						//server.toClients(inputLine,this.hashCode());
 					}
 
+				GameLog.outWarning("ECT", "ECT_E1100 socket readLine returned null, client closed our socket? IP " + socket.getInetAddress() + " port " + socket.getPort());
+				// This is the indicator that the remote, server, closed connection
+				running = false;
+				// exit the entire loop
+				return;
+				// ToDo: exit the application or reconnect (reconnect makes sense in situation of temporary network outage, such as router reboot).
+
+				/*
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
+				*/
 			}
-
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
+			GameLog.outError("ECT", "ECT_E1101 Exception on reading from hosted client socket (I am server)");
 			e1.printStackTrace();
 		}
-
 	}
 
 	/**

@@ -2,6 +2,7 @@ package euchre.player;
 
 import java.util.Arrays;
 
+import euchre.game.GameLog;
 import euchre.gui.GameBoard;
 import euchre.network.ClientNetworkManager;
 
@@ -9,6 +10,7 @@ import euchre.network.ClientNetworkManager;
  * 
  * @author Neil MacBay(nmmacbay)
  * @author Kyle Kary
+ * @author Stephen A. Gutknecht
  *
  */
 public class HardAI implements AI{
@@ -49,9 +51,11 @@ public class HardAI implements AI{
 			played[1] = tmpPlayed[1];
 		if (tmpPlayed[0]!=null)
 			played[2] = tmpPlayed[2];
+
 		if (action.equals("Nothing")){
-			System.out.println("Something went horribly wrong, " + clientManager.getGameManager().getPlayerIAm().getName() + " died");
+			GameLog.outError("HardAI", "HardAI Something went horribly wrong, " + clientManager.getGameManager().getPlayerIAm().getName() + " died");
 		}
+
 		if (action.equals("Play Card")){
 			Card toPlay = playCard();
 			int cardNum = 0;

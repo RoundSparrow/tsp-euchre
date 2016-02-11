@@ -1,5 +1,6 @@
 package euchre.player;
 
+import euchre.game.GameLog;
 import euchre.gui.*;
 import euchre.network.ClientNetworkManager;
 import euchre.network.ServerNetworkManager;
@@ -7,6 +8,7 @@ import euchre.network.ServerNetworkManager;
 /**
  * 
  * @author krkary
+ * @author Stephen A. Gutknecht
  *
  * The game manager acts as a sort of dealer. It asks each player if they want to order up a card, pick a suit, play a card, etc. in addition
  * to dealing the cards each hand. Also, the game manager passes important information on to the Round class, which in turn stores it to help 
@@ -14,6 +16,7 @@ import euchre.network.ServerNetworkManager;
  */
 public class GameManager {
 
+	private boolean playersReady = false;
 	private Player p1,p2,p3,p4;
 	private Player playerIAm;
 	private Player player1, player2, player3, player4;
@@ -37,6 +40,7 @@ public class GameManager {
 	Card[] hand3 = new Card[5];
 	Card[] hand4 = new Card[5];
 
+
 	/**
 	 * Begins gameplay.  If the current game manager is the server, then it will begin playing the game.
 	 */
@@ -54,8 +58,6 @@ public class GameManager {
 	public void playRound(){
 		board.newRound();
 		if(server!=null) deal();
-		
-
 	}
 
 
@@ -64,6 +66,7 @@ public class GameManager {
 	 * deals five cards to each player..
 	 */
 	private void deal(){
+		GameLog.outInformation("GM", "game deal()");
 		deck = new Deck();									//Create a brand new deck of cards
 		deck.shuffle();										//Shuffle the deck of cards
 
@@ -104,7 +107,6 @@ public class GameManager {
 		server.toClients("SetDealerName," + dealer.getName());
 		server.toClients("SetPlayerTurn," + next);
 		setTurnPlayerID(next);
-
 	}
 
 	/**
@@ -113,7 +115,12 @@ public class GameManager {
 	 * @param GM The GameManager.
 	 * @param GB The GameBoard.
 	 */
-	public void initializeGameBoard(GameBoard GB){
+	public void initializeGameBoard(GameBoard GB) {
+		if (GB.getGM() == null);
+		if (GB.getGM().getPlayerIAm() == null);
+		if (GB.getGM().getPlayerIAm().isHuman());
+
+		// AI clients don't actually need a graphical interface
 		if (GB.getGM().getPlayerIAm().isHuman()){
 			GB.setVisible(true);
 		}
@@ -146,6 +153,9 @@ public class GameManager {
 		p2=client1;
 		p3=client2;
 		p4=client3;
+
+		GameLog.outInformation("GM", "setAllPlayers completed, playersReady!");
+		playersReady = true;
 	}
 
 	/**
@@ -162,6 +172,11 @@ public class GameManager {
 		else if(player==3) play = p3;
 		else play = p4;
 
+		if (play==null)
+		{
+			GameLog.outError("GA", "play is null, aborting CODE_A3000. team: " + team);
+			return;
+		}
 		//Sets the given player on the given team by putting that player in the corresponding "seat"
 		//and then setting all of the appropriate team references
 		if(team==1 && player1==null){
@@ -191,7 +206,7 @@ public class GameManager {
 		teamTwo.setTeamNumber(2);
 		dealer = player1;
 		teamsComplete = true;
-
+		GameLog.outInformation("GA", "setTeam finished, teamsComplete now true, team: " + team + " player " + player);
 	}
 
 	/**
@@ -236,7 +251,6 @@ public class GameManager {
 		else if(teamOneTricks < 3 && board.getTeamWhoOrdered().equals(teamOne)) TeamTwoScore+=2;
 		else if(teamTwoTricks < 3 && board.getTeamWhoOrdered().equals(teamTwo)) TeamOneScore+=2;
 		else System.out.println("ERROR: THE ROUND WINNER WAS NOT CORRECTLY DETERMINED");
-
 
 		if(teamOne.getPlayerOne().equals(playerIAm) || teamOne.getPlayerTwo().equals(playerIAm)){
 			board.setWePoints(TeamOneScore);
@@ -359,6 +373,8 @@ public class GameManager {
 	public boolean isServer(){
 		return (client==null);
 	}
+
+	public boolean isPlayersReady() { return playersReady; }
 
 	public void setTurnPlayerID(int id){
 		currentTurnPlayerID = id;
