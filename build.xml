@@ -1,0 +1,53 @@
+<!--
+ANT java build.xml for tsp-euchre
+Version: 001
+Author: Stephen A Gutknecht
+
+NOTE: I could not find any instructions for how to build the jar. The Google Code site had not shown any activity since 2010-12-10.
+
+HOWTO:
+   $ ant compile
+   $ ant jar
+   $ ant run
+-->
+<project>
+   <!-- .jar for only tsp-euchure tree -->
+
+   <target name="compress" depends="compile">
+      <jar destfile="Euchre.jar" basedir="build/classes" />
+   </target>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac destdir="build/classes"
+           debug="on"
+           >
+           <src path="src/euchre" />
+           <exclude name="game/GameAndroid.java"/>
+           <exclude name="game/GameRunner.java"/>
+        </javac>
+    </target>
+
+   <fileset id="resources" dir="src/">
+        <include name="**/*.png"/>
+   </fileset>
+
+    <target name="jar">
+        <jar destfile="Euchre.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="euchre.game.Game"/>
+            </manifest>
+
+            <fileset refid="resources"/>
+        </jar>
+    </target>
+
+    <target name="run">
+        <java jar="Euchre.jar" fork="true"/>
+    </target>
+
+</project>
