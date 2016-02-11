@@ -2,6 +2,9 @@ package euchre.gui;
 import java.awt.*;
 import javax.swing.JOptionPane;
 
+import euchre.game.GameLog;
+import euchre.game.GameRunnerCallback;
+
 /**
  * Screen to setup a local game of euchre played between the user and some AI.
  *
@@ -90,11 +93,11 @@ public class SetupLocal extends javax.swing.JFrame {
 
 		jLabel1.setText("Your Name: ");
 
-		jLabel2.setText("Computer 1 Dificulty: ");
+		jLabel2.setText("Computer 1 Difficulty: ");
 
-		jLabel3.setText("Computer 2 Dificulty: ");
+		jLabel3.setText("Computer 2 Difficulty: ");
 
-		jLabel4.setText("Computer 3 Dificulty:");
+		jLabel4.setText("Computer 3 Difficulty:");
 
 		jTextFieldPlayerName.setText("Player 1");
 
@@ -139,7 +142,13 @@ public class SetupLocal extends javax.swing.JFrame {
 		jButtonGameStart.setText("Start Game");
 		jButtonGameStart.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				startGame(evt);
+				GameLog.outInformation("GE", "mouseClicked before startGame");
+				boolean goodStart = startGame(evt);
+				GameLog.outInformation("GE", "mouseClicked after startGame, good? " + goodStart);
+				if (goodStart)
+				{
+					GameRunnerCallback.createLocalGamePartTwo();
+				}
 			}
 		});
 
@@ -240,14 +249,20 @@ public class SetupLocal extends javax.swing.JFrame {
 	/**
 	 * Launch a local game with the options that were selected by the user.
 	 */
-	private void startGame(java.awt.event.MouseEvent evt) {
+	private boolean startGame(java.awt.event.MouseEvent evt) {
 		if (jTextFieldPlayerName.getText().isEmpty() || jTextFieldPlayerName.getText().trim().isEmpty()){ //Invalid input (whitespace only)
+			// To popu on top-mot activity, be sure to getActivity
+			GameRunnerCallback.setDialogJFrame(this, "PLAYERNAME_A");
 			JOptionPane.showMessageDialog(null, "Please enter a player name", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
 		}else if(contains(jTextFieldPlayerName.getText().trim(), ',')){
+			GameRunnerCallback.setDialogJFrame(this, "PLAYERNAME_B");
 			JOptionPane.showMessageDialog(null, "Please enter a player name without commas.", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
 		}else { //Valid input
 			setupComplete = true;
 			this.setVisible(false);
+			return true;
 		}
 	}
 

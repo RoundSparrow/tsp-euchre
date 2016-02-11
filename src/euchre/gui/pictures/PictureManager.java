@@ -1,5 +1,7 @@
 package euchre.gui.pictures;
 
+import java.net.URL;
+
 import javax.swing.*;
 
 /**
@@ -39,40 +41,52 @@ public class PictureManager {
 	private ImageIcon sidewaysBack;
 	private ImageIcon empty;
 	private ImageIcon sidewaysEmpty;
-	
+
+
+	public URL getImageCommonPath(String inFilename)
+	{
+		URL outPath = getClass().getResource("/euchre/gui/pictures/" + inFilename);
+		return outPath;
+	}
+
+	public ImageIcon getImageIconForFile(String inFilename)
+	{
+		return new javax.swing.ImageIcon(getImageCommonPath(inFilename));
+	}
+
 	/**
 	 * Constructs a new picture manager object.
 	 */
 	public PictureManager(){
 		//assign the various pictures to their variables.
-		h9 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/9h.png"));
-		h10 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/10h.png"));
-		ha = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/ah.png"));
-		hj = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/jh.png"));
-		hq = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/qh.png"));
-		hk = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/kh.png"));
-		d9 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/9d.png"));
-		d10 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/10d.png"));
-		da = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/ad.png"));
-		dj = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/jd.png"));
-		dq = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/qd.png"));
-		dk = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/kd.png"));
-		s9 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/9s.png"));
-		s10 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/10s.png"));
-		sa = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/as.png"));
-		sj = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/js.png"));
-		sq = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/qs.png"));
-		sk = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/ks.png"));
-		c9 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/9c.png"));
-		c10 = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/10c.png"));
-		ca = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/ac.png"));
-		cj = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/jc.png"));
-		cq = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/qc.png"));
-		ck = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/kc.png"));
-		back = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/back.png"));
-		sidewaysBack = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/back_sideways.png"));
-		empty = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/empty.png"));
-		sidewaysEmpty = new javax.swing.ImageIcon(getClass().getResource("/euchre/gui/pictures/empty_sideways.png"));
+		h9 = getImageIconForFile("9h.png");
+		h10 = getImageIconForFile("10h.png");
+		ha = getImageIconForFile("ah.png");
+		hj = getImageIconForFile("jh.png");
+		hq = getImageIconForFile("qh.png");
+		hk = getImageIconForFile("kh.png");
+		d9 = getImageIconForFile("9d.png");
+		d10 = getImageIconForFile("10d.png");
+		da = getImageIconForFile("ad.png");
+		dj = getImageIconForFile("jd.png");
+		dq = getImageIconForFile("qd.png");
+		dk = getImageIconForFile("kd.png");
+		s9 = getImageIconForFile("9s.png");
+		s10 = getImageIconForFile("10s.png");
+		sa = getImageIconForFile("as.png");
+		sj = getImageIconForFile("js.png");
+		sq = getImageIconForFile("qs.png");
+		sk = getImageIconForFile("ks.png");
+		c9 = getImageIconForFile("9c.png");
+		c10 = getImageIconForFile("10c.png");
+		ca = getImageIconForFile("ac.png");
+		cj = getImageIconForFile("jc.png");
+		cq = getImageIconForFile("qc.png");
+		ck = getImageIconForFile("kc.png");
+		back = getImageIconForFile("back.png");
+		sidewaysBack = getImageIconForFile("back_sideways.png");
+		empty = getImageIconForFile("empty.png");
+		sidewaysEmpty = getImageIconForFile("empty_sideways.png");
 				
 	}
 	

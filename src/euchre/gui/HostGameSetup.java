@@ -2,6 +2,8 @@ package euchre.gui;
 
 import java.awt.*;
 import javax.swing.JOptionPane;
+
+import euchre.game.GameLog;
 import euchre.player.GameManager;
 
 /**
@@ -50,7 +52,6 @@ public class HostGameSetup extends javax.swing.JFrame {
 		Point p = new Point();
 		p.setLocation(xCenter - xSize/2, yCenter - ySize/2);
 		this.setLocation(p);
-		
 	}
 
 	/** This method is called from within the constructor to
@@ -136,13 +137,15 @@ public class HostGameSetup extends javax.swing.JFrame {
 		}else if(contains(nameInput.getText().trim(), ',')){
 			JOptionPane.showMessageDialog(null, "Please enter a player name without commas.", "Error", JOptionPane.ERROR_MESSAGE);
 		}else { //Valid input
-			lobby = new GameLobby(humanPlayerCount.getSelectedIndex()+1, nameInput.getText().trim(), myManager);
-			lobby.setVisible(true);
-			myManager.setLobby(lobby);
-			setupComplete = true;
-			playerName = nameInput.getText().trim();
-			numAIs = 3-(humanPlayerCount.getSelectedIndex()+1);
-			this.setVisible(false);
+            int desiredHumanPlayers = humanPlayerCount.getSelectedIndex()+1;
+            playerName = nameInput.getText().trim();
+            GameLog.outInformation("HGS", "GameLobby being created, desiredHumanPlayers " + desiredHumanPlayers + ", playerName: " + playerName);
+            lobby = new GameLobby(desiredHumanPlayers, playerName, myManager);
+            lobby.setVisible(true);
+            myManager.setLobby(lobby);
+            setupComplete = true;
+            numAIs = 3 - desiredHumanPlayers;
+            this.setVisible(false);
 		}
 	}
 	
