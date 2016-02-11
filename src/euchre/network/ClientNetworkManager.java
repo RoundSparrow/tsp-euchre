@@ -187,7 +187,7 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 
 						//output the message
 						if(debug)
-							System.out.println("Message from server: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort() + " msg: " + inputLine);
+							System.out.println("Message from server [localPort " + clientSocket.getLocalPort() + "]: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort() + " msg: " + inputLine);
 						protocol.clientParse(inputLine);
 					}
 
@@ -197,15 +197,17 @@ public class ClientNetworkManager extends Thread{ // extends NetworkManager {   
 					// exit the entire loop
 					return;
 				} catch (IOException e) {
+					running = false;
 					GameLog.outError("CNM", "CNM_E1101 Exception on reading from server socket");
 					e.printStackTrace();
+					// exit the entire loop
+					return;
 				}
 			}	
 		}	
 	}
 
 	public boolean isConnected(){
-
 		return isConnected;
 	}
 }

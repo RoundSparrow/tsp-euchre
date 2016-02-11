@@ -57,14 +57,17 @@ public class EuchreConnectionThread extends Thread {
 			//continually run this loop
 			while (true){
 
-				if(running)
+				if(running) {
+					String senderNote = "ECT_" + socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
+
 					//if a message is recieved
-					while((inputLine = in.readLine()) != null){
+					while ((inputLine = in.readLine()) != null) {
 
 						//output the message
-						server.parse(inputLine);
+						server.parse(inputLine, senderNote);
 						//server.toClients(inputLine,this.hashCode());
 					}
+				}
 
 				GameLog.outWarning("ECT", "ECT_E1100 socket readLine returned null, client closed our socket? IP " + socket.getInetAddress() + " port " + socket.getPort());
 				// This is the indicator that the remote, server, closed connection
