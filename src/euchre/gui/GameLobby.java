@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.net.InetAddress;
+
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import euchre.player.GameManager;
 
@@ -12,6 +14,7 @@ import euchre.player.GameManager;
  *
  * @author sdwilke
  * @author Neil MacBay(nmmacbay)
+ * @author Stephen A. Gutknecht
  */
 public class GameLobby extends javax.swing.JFrame{
 
@@ -22,6 +25,7 @@ public class GameLobby extends javax.swing.JFrame{
 	private int numberOfAI;
 	private char player2Difficulty = 'x';
 	private char player3Difficulty = 'x';
+	private char player4Difficulty = 'x';
 	private int connectionsMade = 0;
 	private boolean setupComplete = false;
 	private String ip;
@@ -102,9 +106,10 @@ public class GameLobby extends javax.swing.JFrame{
 		int xSize = this.getSize().width;
 		int ySize = this.getSize().height;
 		Point p = new Point();
-		p.setLocation(xCenter - xSize/2, yCenter - ySize/2);
+		p.setLocation(xCenter - xSize / 2, yCenter - ySize / 2);
 		this.setLocation(p);
 	}
+
 
 	/**
 	 * sets the AI difficulty for player 2
@@ -124,7 +129,7 @@ public class GameLobby extends javax.swing.JFrame{
 	}
 
 	/**
-	 * sets the AI difficulty for player 4
+	 * sets the AI difficulty for player 3
 	 * @param difficulty e for easy, m for medium, h for hard
 	 */
 	public void setPlayer3Difficulty(char difficulty){
@@ -137,6 +142,23 @@ public class GameLobby extends javax.swing.JFrame{
 		}else if (difficulty == 'h'){
 			player3Difficulty = 'h';
 			Player3Status.setText("AI Two: Difficulty: Hard");
+		}
+	}
+
+	/**
+	 * sets the AI difficulty for player 4
+	 * @param difficulty e for easy, m for medium, h for hard
+	 */
+	public void setPlayer4Difficulty(char difficulty){
+		if (difficulty == 'e'){
+			player4Difficulty = 'e';
+			Player4Status.setText("AI Three: Difficulty: Easy");
+		}else if (difficulty == 'm'){
+			player4Difficulty = 'm';
+			Player4Status.setText("AI Three: Difficulty: Medium");
+		}else if (difficulty == 'h'){
+			player4Difficulty = 'h';
+			Player4Status.setText("AI Three: Difficulty: Hard");
 		}
 	}
 
@@ -435,6 +457,17 @@ public class GameLobby extends javax.swing.JFrame{
 		}
 	}
 
+	private void checkIfThreePlayers()
+	{
+		if(connectionsMade >= 3){
+			startGame.setEnabled(true);
+			changeComputerDifficulty.setEnabled(true);
+		}
+	}
+
+
+	// ToDo: does this logic count on the timing of the launch to be sure player 1 = "AI One"? What if they are started out of order?
+
 	/**
 	 * Sets the status of player two and how they appear to host.
 	 * Examples:
@@ -450,10 +483,7 @@ public class GameLobby extends javax.swing.JFrame{
 		if (status.equals("AI One")){
 			setplayer2Difficulty('m');
 		}
-		if(connectionsMade >= 3){
-			startGame.setEnabled(true);
-			changeComputerDifficulty.setEnabled(true);
-		}
+		checkIfThreePlayers();
 	}
 
 	/**
@@ -471,10 +501,7 @@ public class GameLobby extends javax.swing.JFrame{
 		if (status.equals("AI Two")){
 			setPlayer3Difficulty('m');
 		}
-		if(connectionsMade >= 3){
-			startGame.setEnabled(true);
-			changeComputerDifficulty.setEnabled(true);
-		}
+		checkIfThreePlayers();
 	}
 
 	/**
@@ -489,10 +516,10 @@ public class GameLobby extends javax.swing.JFrame{
 	public void setPlayer4Status(String status){
 		Player4Status.setText(status);
 		connectionsMade++;
-		if(connectionsMade >= 3){
-			startGame.setEnabled(true);
-			changeComputerDifficulty.setEnabled(true);
+		if (status.equals("AI Three")){
+			setPlayer4Difficulty('m');
 		}
+		checkIfThreePlayers();
 	}
 
 	public boolean setupComplete(){

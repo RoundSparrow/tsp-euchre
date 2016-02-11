@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import javax.swing.JOptionPane;
 
+import euchre.network.ClientNetworkManager;
+
 /**
  * The game setup forms for the client. You input your name then signal that your ready.
  *
@@ -190,7 +192,7 @@ public class ClientGameSetup extends javax.swing.JFrame{
 
 	public String getIP(){
 		if(serverIP.getText().trim().isEmpty())
-			return "localhost";
+			return ClientNetworkManager.HOST_LOCALHOST;
 		return serverIP.getText().trim();
 	}
 }

@@ -12,11 +12,14 @@ import euchre.player.*;
 
 /**
  * The GUI that displays the Euchre game to the user and allows them to play it.
- * 
+ *
  * @author Neil MacBay
  * @author Sam Wilke
+ * @author Stephen A. Gutknecht
  */
 public class GameBoard extends javax.swing.JFrame{
+	private static final boolean GAME_TURN_LABEL_SHOWALWAYS = true;
+
 	private Player humanPlayer;
 	private PictureManager picManager = new PictureManager();
 	private static final long serialVersionUID = 1L;
@@ -98,6 +101,7 @@ public class GameBoard extends javax.swing.JFrame{
 	private javax.swing.JLabel weTeamTricksLabel;
 	private javax.swing.JLabel weTricksLabel;
 	private javax.swing.JButton[] handButtons = {jButtonYourCard1, jButtonYourCard2, jButtonYourCard3, jButtonYourCard4, jButtonYourCard5};
+	private javax.swing.JLabel waitingStatusLabel;
 
 
 	public GameBoard(){
@@ -105,7 +109,16 @@ public class GameBoard extends javax.swing.JFrame{
 		initComponents();
 		centerScreen();
 		hideSuitButtons();
-		jLabelTurn.setVisible(false);
+
+		if (GAME_TURN_LABEL_SHOWALWAYS)
+		{
+			jLabelTurn.setVisible(true);
+			jLabelTurn.setText("GameBoard initialized SPOT000A");
+		}
+		else {
+			jLabelTurn.setVisible(false);
+		}
+
 		handButtons[0] = jButtonYourCard1;
 		handButtons[1] = jButtonYourCard2;
 		handButtons[2] = jButtonYourCard3;
@@ -156,21 +169,25 @@ public class GameBoard extends javax.swing.JFrame{
 		RPlayed.setIcon(picManager.getPicture('e', 'e'));
 		LPlayed.setIcon(picManager.getPicture('e', 'e'));
 		UPlayed.setIcon(picManager.getPicture('e', 'e'));
+
+		UCard1.setIcon(picManager.getPicture('b', 'n'));
 		UCard2.setIcon(picManager.getPicture('b', 'n'));
 		UCard3.setIcon(picManager.getPicture('b', 'n'));
-		UCard1.setIcon(picManager.getPicture('b', 'n'));
 		UCard4.setIcon(picManager.getPicture('b', 'n'));
 		UCard5.setIcon(picManager.getPicture('b', 'n'));
+
+		LCard1.setIcon(picManager.getPicture('b', 's'));
+		LCard2.setIcon(picManager.getPicture('b', 's'));
 		LCard3.setIcon(picManager.getPicture('b', 's'));
 		LCard4.setIcon(picManager.getPicture('b', 's'));
 		LCard5.setIcon(picManager.getPicture('b', 's'));
-		LCard2.setIcon(picManager.getPicture('b', 's'));
-		LCard1.setIcon(picManager.getPicture('b', 's'));
-		RCard5.setIcon(picManager.getPicture('b', 's'));
-		RCard4.setIcon(picManager.getPicture('b', 's'));
-		RCard3.setIcon(picManager.getPicture('b', 's'));
-		RCard2.setIcon(picManager.getPicture('b', 's'));
+
 		RCard1.setIcon(picManager.getPicture('b', 's'));
+		RCard2.setIcon(picManager.getPicture('b', 's'));
+		RCard3.setIcon(picManager.getPicture('b', 's'));
+		RCard4.setIcon(picManager.getPicture('b', 's'));
+		RCard5.setIcon(picManager.getPicture('b', 's'));
+
 		showTrumpButtons();
 		TurnedCard.setVisible(true);
 		hideSuitButtons();
@@ -180,12 +197,15 @@ public class GameBoard extends javax.swing.JFrame{
 		jButtonYourCard3.setIcon(picManager.getPicture(humanPlayer.getHand()[2].getSuit(), humanPlayer.getHand()[2].getCardValue()));
 		jButtonYourCard4.setIcon(picManager.getPicture(humanPlayer.getHand()[3].getSuit(), humanPlayer.getHand()[3].getCardValue()));
 		jButtonYourCard5.setIcon(picManager.getPicture(humanPlayer.getHand()[4].getSuit(), humanPlayer.getHand()[4].getCardValue()));
+
 		trumpLabel.setText("∅");
 		trumpLabel.setForeground(new java.awt.Color(0, 0, 0));
+
 		playerCards[0] = 5;
 		playerCards[1] = 5;
 		playerCards[2] = 5;
 		playerCards[3] = 5;
+
 		cardsPlayed = 0;
 		suitLed = 'e';
 		settingSuit=false;
@@ -197,6 +217,7 @@ public class GameBoard extends javax.swing.JFrame{
 		played = new Card[4];
 		oneTricks = 0;
 		twoTricks = 0;
+
 		setWeTricks(0);
 		setTheyTricks(0);
 
@@ -235,19 +256,31 @@ public class GameBoard extends javax.swing.JFrame{
 			rightPlayer = GM.getPlayer3();
 			break;
 		}
+		default:
+			GameLog.outError("GB", "unexpected humanPlayer getNumber " + humanPlayer.getNumber() + " name " + humanPlayer.getName());
+			break;
 		}
+
 		setTopPlayer(topPlayer);
 		setLeftPlayer(leftPlayer);
 		setRightPlayer(rightPlayer);
 		setBottomPlayer(humanPlayer);
 
-		jLabelTurn.setVisible(false);
+		if (! GAME_TURN_LABEL_SHOWALWAYS) {
+			jLabelTurn.setVisible(false);
+		}
 		jButtonPass.setVisible(false);
 		jButtonPickUp.setVisible(false);
 
 		if(GM.isMyTurn()){
 			//JOptionPane.showMessageDialog(null, "Your Turn!  Play a card", "Your Turn", JOptionPane.INFORMATION_MESSAGE);
-			jLabelTurn.setVisible(true);
+			if (GAME_TURN_LABEL_SHOWALWAYS)
+			{
+				jLabelTurn.setText("Your Turn!-");
+			}
+			else {
+				jLabelTurn.setVisible(true);
+			}
 
 			if(!settingSuit){
 				jButtonPass.setVisible(true);
@@ -260,8 +293,20 @@ public class GameBoard extends javax.swing.JFrame{
 			if(settingSuit)
 				showSuitButtons();
 		}
-		else{
-			jLabelTurn.setVisible(false);
+		else {
+			if (GAME_TURN_LABEL_SHOWALWAYS)
+			{
+				Player currentPlayer = GM.getCurrentTurnPlayer();
+				String outPlayerInfo = "ERROR_MISSING";
+				if (currentPlayer != null)
+				{
+					outPlayerInfo = currentPlayer.getName();
+				}
+				jLabelTurn.setText("TURN P" + GM.getCurrentTurnPlayerID() + " " + outPlayerInfo);
+			}
+			else {
+				jLabelTurn.setVisible(false);
+			}
 			if(!settingSuit){
 				jButtonPass.setVisible(false);
 				jButtonPickUp.setVisible(false);
@@ -365,6 +410,7 @@ public class GameBoard extends javax.swing.JFrame{
 		RPlayed = new javax.swing.JLabel();
 		trumpLabel = new javax.swing.JLabel();
 		jLabel1 = new javax.swing.JLabel();
+		waitingStatusLabel = new javax.swing.JLabel();
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		setTitle("Euchre Game Board");
@@ -390,6 +436,14 @@ public class GameBoard extends javax.swing.JFrame{
 			}
 		});
 
+		jButtonYourCard3.setIcon(picManager.getPicture('b', 'n'));
+		jButtonYourCard3.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
+				GameLog.outInformation("GB", "yourCard3 click");
+				card3Clicked(evt);
+			}
+		});
+
 		jButtonYourCard4.setIcon(picManager.getPicture('b', 'n'));
 		jButtonYourCard4.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -406,13 +460,6 @@ public class GameBoard extends javax.swing.JFrame{
 			}
 		});
 
-		jButtonYourCard3.setIcon(picManager.getPicture('b', 'n'));
-		jButtonYourCard3.addMouseListener(new java.awt.event.MouseAdapter() {
-			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				GameLog.outInformation("GB", "yourCard3 click");
-				card3Clicked(evt);
-			}
-		});
 
 		jLabelUPlayerName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		jLabelUPlayerName.setText("Player name");
@@ -423,19 +470,13 @@ public class GameBoard extends javax.swing.JFrame{
 		jLabelRPlayerName.setText("Player name");
 
 		weTeamPointsLabel.setText("0");
-
 		weTricksLabel.setText("Tricks:");
-
 		weTeamTricksLabel.setText("0");
-
 		wePointsLabel.setText("Points:");
 
 		theyPointsLabel.setText("Points:");
-
 		theyTeamPointsLabel.setText("0");
-
 		theyTricksLabel.setText("Tricks:");
-
 		theyTeamTricksLabel.setText("0");
 
 		jButtonPass.setText("Pass");
@@ -462,11 +503,8 @@ public class GameBoard extends javax.swing.JFrame{
 		jLabelTurn.setText("Your Turn!");
 
 		theyLabel.setText("Team:");
-
 		weLabel.setText("Team:");
-
 		theyTeamNumberLabel.setText("1");
-
 		weTeamNumberLabel.setText("2");
 
 		heartsButton.setFont(new java.awt.Font("DejaVu Sans", 0, 14));
@@ -511,41 +549,27 @@ public class GameBoard extends javax.swing.JFrame{
 		});
 
 		UPlayed.setIcon(picManager.getPicture('e', 'e'));
-
 		LPlayed.setIcon(picManager.getPicture('e', 'e'));
-
-		YourPlayed.setIcon(picManager.getPicture('b', 'n'));
+		YourPlayed.setIcon(picManager.getPicture('e', 'e'));
 
 		TurnedCard.setIcon(picManager.getPicture('b', 'n'));
 
 		RCard1.setIcon(picManager.getPicture('b', 's'));
-
 		RCard2.setIcon(picManager.getPicture('b', 's'));
-
 		RCard3.setIcon(picManager.getPicture('b', 's'));
-
 		RCard4.setIcon(picManager.getPicture('b', 's'));
-
 		RCard5.setIcon(picManager.getPicture('b', 's'));
 
-		LCard4.setIcon(picManager.getPicture('b', 's'));
-
-		LCard3.setIcon(picManager.getPicture('b', 's'));
-
-		LCard2.setIcon(picManager.getPicture('b', 's'));
-
 		LCard1.setIcon(picManager.getPicture('b', 's'));
-
+		LCard2.setIcon(picManager.getPicture('b', 's'));
+		LCard3.setIcon(picManager.getPicture('b', 's'));
+		LCard4.setIcon(picManager.getPicture('b', 's'));
 		LCard5.setIcon(picManager.getPicture('b', 's'));
 
 		UCard1.setIcon(picManager.getPicture('b', 'n'));
-
 		UCard2.setIcon(picManager.getPicture('b', 'n'));
-
 		UCard3.setIcon(picManager.getPicture('b', 'n'));
-
 		UCard4.setIcon(picManager.getPicture('b', 'n'));
-
 		UCard5.setIcon(picManager.getPicture('b', 'n'));
 
 		RPlayed.setIcon(picManager.getPicture('e', 'e'));
@@ -556,6 +580,9 @@ public class GameBoard extends javax.swing.JFrame{
 		jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 18));
 		jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 		jLabel1.setText("Trump Is: ");
+
+		waitingStatusLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 18));
+		waitingStatusLabel.setText("Waiting on ??");
 
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
@@ -810,6 +837,7 @@ public class GameBoard extends javax.swing.JFrame{
 																																																																						.addContainerGap())
 		);
 
+		// this.getContentPane().add(waitingStatusLabel);
 		pack();
 	}
 
@@ -1144,7 +1172,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Returns true if the given card is following the lead suit.
-	 * 
+	 *
 	 * @param c The given card.
 	 * @param trump The trump suit.
 	 * @param led The led suit.
@@ -1166,7 +1194,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Signifies that the user wishes to pass, will act in accordance to the game to allow user to do so.
-	 * 
+	 *
 	 * @param evt Mouse click that triggered this event.
 	 */
 	public void passButtonClicked(java.awt.event.MouseEvent evt){
@@ -1187,13 +1215,13 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Signifies that the user wishes to have the dealer pick up the dealt card, will act in accordance to the game to allow user to make the dealer pick up the card.
-	 * 
+	 *
 	 * @param evt Mouse click that triggered this event.
 	 */
 	public void pickItUpButtonClicked(java.awt.event.MouseEvent evt){
 		if(GM.isMyTurn() && !pickItUp){
 			if(settingSuit == false){
-				if(GM.isServer()){					
+				if(GM.isServer()){
 					GM.getServerNetworkManager().toClients("PickItUp");
 
 					if(GM.getPlayerIAm().getTeam()==1) {
@@ -1227,7 +1255,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Signifies that the user wishes to make suit hearts, will act in accordance to the game to allow user to do so.
-	 * 
+	 *
 	 * @param evt Mouse click that triggered this event.
 	 */
 	public void heartsListener(java.awt.event.MouseEvent evt){
@@ -1247,7 +1275,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Signifies that the user wishes to make the suit clubs, will act in accordance to the game to allow user to do so.
-	 * 
+	 *
 	 * @param evt Mouse click that triggered this event.
 	 */
 	public void clubsListener(java.awt.event.MouseEvent evt){
@@ -1267,7 +1295,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Signifies that the user wishes to make the suit diamonds, will act in accordance to the game to allow user to do so.
-	 * 
+	 *
 	 * @param evt Mouse click that triggered this event.
 	 */
 	public void diamondsListener(java.awt.event.MouseEvent evt){
@@ -1286,7 +1314,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Signifies that the user wishes to make the suit spades, will act in accordance to the game to allow user to do so.
-	 * 
+	 *
 	 * @param evt Mouse click that triggered this event.
 	 */
 	public void spadesListener(java.awt.event.MouseEvent evt){
@@ -1305,7 +1333,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Signifies that the user wishes to pass on calling the suit, will act in accordance to the game to allow user to do so.
-	 * 
+	 *
 	 * @param evt Mouse click that triggered this event.
 	 */
 	public void suitPassListener(java.awt.event.MouseEvent evt){
@@ -1319,7 +1347,7 @@ public class GameBoard extends javax.swing.JFrame{
 			}
 			else{
 				humanPlayer.setCallSuit('x');
-			} 	
+			}
 			 */
 			suitButtonsUsed = true;
 			cannotPassSuit = true;
@@ -1333,7 +1361,13 @@ public class GameBoard extends javax.swing.JFrame{
 		jButtonPass.setVisible(false);
 		jButtonPickUp.setVisible(false);
 		TurnedCard.setIcon(picManager.getPicture('e', '0'));
-		jLabelTurn.setVisible(false);
+		if (GAME_TURN_LABEL_SHOWALWAYS)
+		{
+			jLabelTurn.setText("hideTrumpButtons SPOT0001");
+		}
+		else {
+			jLabelTurn.setVisible(false);
+		}
 		jLabelDealer.setVisible(false);
 	}
 
@@ -1344,6 +1378,9 @@ public class GameBoard extends javax.swing.JFrame{
 		jButtonPass.setVisible(true);
 		jButtonPickUp.setVisible(true);
 		jLabelTurn.setVisible(true);
+		if (GAME_TURN_LABEL_SHOWALWAYS) {
+			jLabelTurn.setText("YOUR TURN!!!!!!");
+		}
 		jLabelDealer.setVisible(true);
 	}
 
@@ -1371,7 +1408,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * displays an indicated card played by specified player at the center of the board
-	 * 
+	 *
 	 * @param c card to be played
 	 * @param playerNumber number of the player playing the card
 	 */
@@ -1460,7 +1497,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 			if(hand>5){
 
-				GM.interpretRound(oneTricks, twoTricks);				
+				GM.interpretRound(oneTricks, twoTricks);
 				GM.setDealer(GM.nextPlayer(GM.getDealer()));
 				GM.playRound();
 			}
@@ -1479,7 +1516,7 @@ public class GameBoard extends javax.swing.JFrame{
 	 */
 	public void hideOpponentCard(int playerNumber){
 		if(playerNumber == leftPlayer.getNumber())
-		{	
+		{
 			switch(leftPlayed){
 			case 0:
 				LCard1.setIcon(picManager.getPicture('e','s'));
@@ -1499,10 +1536,10 @@ public class GameBoard extends javax.swing.JFrame{
 				LCard5.setIcon(picManager.getPicture('e','s'));
 				break;
 			}
-			leftPlayed++;	
+			leftPlayed++;
 		}
 		if(playerNumber == rightPlayer.getNumber())
-		{	
+		{
 			switch(rightPlayed){
 			case 0:
 				RCard1.setIcon(picManager.getPicture('e','s'));
@@ -1522,7 +1559,7 @@ public class GameBoard extends javax.swing.JFrame{
 				RCard5.setIcon(picManager.getPicture('e','s'));
 				break;
 			}
-			rightPlayed++;		
+			rightPlayed++;
 		}
 		if(playerNumber == topPlayer.getNumber())
 		{
@@ -1543,21 +1580,21 @@ public class GameBoard extends javax.swing.JFrame{
 				UCard5.setIcon(picManager.getPicture('e','0'));
 				break;
 			}
-			upperPlayed++;	
+			upperPlayed++;
 		}
 	}
 
 	/**
 	 * Primarily for AI Use. Gives A String telling the player what is required of them.
 	 * Phrase(string returned) - Description
-	 * 
+	 *
 	 * Nothing - Not your turn or something is horribly wrong(especially in cases of AI).
 	 * Play Card - Play a Card.
 	 * Pick Up - Forced to pick up the card.
 	 * Call Suit - Call what suit you want.
 	 * Call Order Up - Pass or pick it up.
 	 * Stuck Dealer - forced to call suit.
-	 * 
+	 *
 	 * @return The string of what the player needs to do.
 	 */
 	public String whatToDo(){
@@ -1600,9 +1637,9 @@ public class GameBoard extends javax.swing.JFrame{
 	 * players besides the dealer.
 	 */
 	public void pickItUp(){
-	
+
 		trump = turnedCard.getSuit();
-	
+
 		if(!GM.isDealer()){
 			TurnedCard.setVisible(false);
 			jLabelDealer.setVisible(false);
@@ -1613,7 +1650,7 @@ public class GameBoard extends javax.swing.JFrame{
 	}
 
 	/**
-	 * Method called when trump has been determined. Begins the 
+	 * Method called when trump has been determined. Begins the
 	 * actual gameplay.
 	 */
 	public void trumpSet(){
@@ -1640,7 +1677,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * This method is used to display the players hand to the GUI
-	 * 
+	 *
 	 * @param card the card to be set to the specified button
 	 * @param cardNumber the button to set to the specified card
 	 */
@@ -1650,7 +1687,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Sets the string above the deal to represent that the deal belongs to the given players name.
-	 * 
+	 *
 	 * @param name The name of who the deal belongs to.
 	 */
 	public void setDealerName(String name){
@@ -1725,7 +1762,7 @@ public class GameBoard extends javax.swing.JFrame{
 	 * 's' - spades
 	 * 'h' - hearts
 	 * 'e' - empty-set label.
-	 * 
+	 *
 	 * @return The suit that is shown as trump.
 	 */
 	private char getTrump(){
@@ -1745,7 +1782,7 @@ public class GameBoard extends javax.swing.JFrame{
 
 	/**
 	 * Sets the trump label on the game board to the given suit.
-	 * 
+	 *
 	 * @param suit The suit to show as trump.
 	 */
 	public void setTrumpLabel(char suit){
@@ -1795,7 +1832,7 @@ public class GameBoard extends javax.swing.JFrame{
 		}
 		else{
 			GM.getClientNetworkManager().toServer("SetPlayerTurn,"+id);
-		} 
+		}
 	}
 
 	public int getTeamOneTricks(){
